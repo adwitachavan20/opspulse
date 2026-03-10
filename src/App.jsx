@@ -163,6 +163,7 @@ export default function App() {
           alerts={alerts}
           stressScore={stressScore}
           onExit={() => setWarRoom(false)}
+          theme={theme}
         />
       )}
 
@@ -197,10 +198,10 @@ export default function App() {
           {/* Stress score badge */}
           <div
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${stressScore?.overall > 70
-                ? 'border-red-500/40 bg-red-500/10'
-                : stressScore?.overall > 50
-                  ? 'border-amber-500/40 bg-amber-500/10'
-                  : ''
+              ? 'border-red-500/40 bg-red-500/10'
+              : stressScore?.overall > 50
+                ? 'border-amber-500/40 bg-amber-500/10'
+                : ''
               }`}
             style={
               !(stressScore?.overall > 50)
@@ -248,8 +249,8 @@ export default function App() {
             <button
               onClick={() => setWarRoom(true)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${crisisCount > 0 || stressScore?.overall > 75
-                  ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse'
-                  : ''
+                ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse'
+                : ''
                 }`}
               style={
                 !(crisisCount > 0 || stressScore?.overall > 75)
@@ -288,8 +289,8 @@ export default function App() {
               </div>
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-bold border ${user.role === 'owner'
-                    ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                    : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                  : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
                   }`}
               >
                 {user.name.charAt(0)}
@@ -315,7 +316,7 @@ export default function App() {
       >
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
 
-          {/* Role switcher */}
+          {/* Role switcher — only shows current user's role, no switching */}
           <div
             className="flex items-center gap-1 rounded-xl p-1 border"
             style={{ background: surface, borderColor: borderCol }}
@@ -341,7 +342,7 @@ export default function App() {
           {/* Mobile scenario switcher */}
           <div className="flex md:hidden items-center gap-1">
             <button onClick={() => setScenario('normal')} className={scenarioBtnClass('normal')}>N</button>
-            <button onClick={() => setScenario('opportunity')} className={scenarioBtnClass('opportunity')}>🚀</button>
+            <button onClick={() => setScenario('opportunity')} className={scenarioBtnClass('opportunity')}></button>
             <button onClick={() => setScenario('crisis')} className={scenarioBtnClass('crisis')}>⚠</button>
           </div>
 
