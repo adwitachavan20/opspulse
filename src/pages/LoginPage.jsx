@@ -346,7 +346,7 @@ export default function LoginPage({ onLogin, theme, onToggleTheme }) {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder="Enter Your Email"
                 required
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all"
                 style={{ background: inputBg, borderColor: borderCol, color: textMain }}
@@ -367,7 +367,7 @@ export default function LoginPage({ onLogin, theme, onToggleTheme }) {
                 type={showPass ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter Your Password"
                 required
                 className="w-full pl-9 pr-10 py-2.5 rounded-xl border text-sm outline-none transition-all"
                 style={{ background: inputBg, borderColor: borderCol, color: textMain }}
