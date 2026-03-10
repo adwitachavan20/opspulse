@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Activity, Zap, User, Settings, RefreshCw, Sun, Moon, LogOut, Clock } from 'lucide-react'
+import { Activity, Zap, User, Settings, RefreshCw, Sun, Moon, LogOut, Clock, Download } from 'lucide-react'
 import { useRealtimeData } from './hooks/useRealtimeData'
 import OwnerDashboard from './pages/OwnerDashboard'
 import OperationsDashboard from './pages/OperationsDashboard'
 import WarRoom from './components/WarRoom'
 import LoginPage from './pages/LoginPage'
 import { getStressLabel } from './lib/dataEngine'
+import { downloadDashboardPDF } from './lib/downloadPDF'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -15,6 +16,7 @@ export default function App() {
   const [pulse, setPulse] = useState(false)
   const [theme, setTheme] = useState('dark')
   const [sessionWarning, setSessionWarning] = useState(false)
+  const [pdfGenerating, setPdfGenerating] = useState(false)
 
   const isDark = theme === 'dark'
 
@@ -62,7 +64,7 @@ export default function App() {
   }, [])
 
   // ── Session Timeout (5 minutes inactivity) ──────────────────────────
-  const SESSION_TIMEOUT = 5 * 60 * 1000 // 5 minutes
+  const SESSION_TIMEOUT = 5 * 60 * 1000
   const timeoutRef = useRef(null)
   const warningRef = useRef(null)
 
@@ -71,12 +73,10 @@ export default function App() {
     clearTimeout(warningRef.current)
     setSessionWarning(false)
 
-    // Show warning 1 minute before logout
     warningRef.current = setTimeout(() => {
       setSessionWarning(true)
     }, SESSION_TIMEOUT - 60000)
 
-    // Auto logout after full timeout
     timeoutRef.current = setTimeout(() => {
       handleLogout()
     }, SESSION_TIMEOUT)
@@ -96,7 +96,13 @@ export default function App() {
     }
   }, [user, resetTimer])
 
-  // Normal button active style
+  // PDF download handler
+  const handleDownloadPDF = useCallback(async () => {
+    setPdfGenerating(true)
+    await downloadDashboardPDF({ role, stressScore, scenario })
+    setPdfGenerating(false)
+  }, [role, stressScore, scenario])
+
   const scenarioBtnClass = (s) =>
     `px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${scenario === s
       ? s === 'crisis'
@@ -111,7 +117,6 @@ export default function App() {
         : 'bg-slate-100 text-slate-500 hover:text-slate-800 border border-transparent'
     }`
 
-  // Show login page if not logged in
   if (!user) {
     return (
       <LoginPage
@@ -245,6 +250,21 @@ export default function App() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
 
+            {/* PDF Download Button */}
+            <button
+              id="pdf-download-btn"
+              onClick={handleDownloadPDF}
+              disabled={pdfGenerating || loading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: surface, borderColor: borderCol, color: textMuted }}
+              title="Download Dashboard as PDF"
+            >
+              <Download size={12} />
+              <span className="">
+                {pdfGenerating ? 'Generating…' : 'Download PDF'}
+              </span>
+            </button>
+
             {/* War Room button */}
             <button
               onClick={() => setWarRoom(true)}
@@ -316,7 +336,7 @@ export default function App() {
       >
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
 
-          {/* Role switcher — only shows current user's role, no switching */}
+          {/* Role switcher */}
           <div
             className="flex items-center gap-1 rounded-xl p-1 border"
             style={{ background: surface, borderColor: borderCol }}
@@ -364,23 +384,27 @@ export default function App() {
             </p>
           </div>
         ) : role === 'owner' ? (
-          <OwnerDashboard
-            metrics={metrics}
-            stressScore={stressScore}
-            alerts={alerts}
-            history={history}
-            onResolveAlert={resolveAlert}
-            theme={theme}
-          />
+          <div id="dashboard-report">
+            <OwnerDashboard
+              metrics={metrics}
+              stressScore={stressScore}
+              alerts={alerts}
+              history={history}
+              onResolveAlert={resolveAlert}
+              theme={theme}
+            />
+          </div>
         ) : (
-          <OperationsDashboard
-            metrics={metrics}
-            stressScore={stressScore}
-            alerts={alerts}
-            history={history}
-            onResolveAlert={resolveAlert}
-            theme={theme}
-          />
+          <div id="dashboard-report">
+            <OperationsDashboard
+              metrics={metrics}
+              stressScore={stressScore}
+              alerts={alerts}
+              history={history}
+              onResolveAlert={resolveAlert}
+              theme={theme}
+            />
+          </div>
         )}
       </main>
 
