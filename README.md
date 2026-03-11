@@ -6,7 +6,7 @@ A real-time business operations dashboard that computes a **Business Stress Scor
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 > **Replace the placeholders below with your actual screenshots.**
 > Recommended: Take screenshots of each view and save them in a `/screenshots` folder in your repo root.
@@ -28,7 +28,7 @@ A real-time business operations dashboard that computes a **Business Stress Scor
 
 ---
 
-## 🚀 Tech Stack
+##  Tech Stack
 
 ### Frontend
 | Technology | Version | Purpose |
@@ -55,7 +55,7 @@ A real-time business operations dashboard that computes a **Business Stress Scor
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -128,7 +128,7 @@ App
 
 ---
 
-## 📊 Data Pipeline
+##  Data Pipeline
 
 ```
 Raw Metrics Input
@@ -218,7 +218,7 @@ Raw Metrics Input
 
 ---
 
-## 🎯 Stress Score Thresholds
+##  Stress Score Thresholds
 
 | Score | Status | Color | Action |
 |-------|--------|-------|--------|
@@ -230,7 +230,7 @@ Raw Metrics Input
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 opspulse/
@@ -265,7 +265,7 @@ opspulse/
 
 ---
 
-## ⚙️ Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js 18+
@@ -307,7 +307,7 @@ npm run preview
 
 ---
 
-## 🧪 Scenarios
+##  Scenarios
 
 The dashboard supports three simulation scenarios switchable from the header:
 
@@ -319,7 +319,7 @@ The dashboard supports three simulation scenarios switchable from the header:
 
 ---
 
-## 👥 User Roles
+##  User Roles
 
 | Role | Access |
 |------|--------|
@@ -328,7 +328,7 @@ The dashboard supports three simulation scenarios switchable from the header:
 
 ---
 
-## 📄 PDF Export
+##  PDF Export
 
 Click **Download PDF** in the header to export the current dashboard view as a professionally formatted A4 PDF including:
 - Report header with role, scenario, and timestamp
@@ -338,13 +338,13 @@ Click **Download PDF** in the header to export the current dashboard view as a p
 
 ---
 
-## 🏆 Built For
+##  Built For
 
 **HORIZON 1.0** — Hackathon organized by  
 Vidyavardhini's College of Engineering & Technology
 
 ---
 
-## 📜 License
+##  License
 
 This project was built for academic/hackathon purposes.
