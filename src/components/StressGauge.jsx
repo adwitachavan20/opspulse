@@ -46,12 +46,7 @@ export default function StressGauge({ score, breakdown }) {
             style={{ transition: 'all 0.3s ease', filter: `drop-shadow(0 0 8px ${arcColor})` }}
           />
           {/* Glow dot at end */}
-          <circle
-            cx={110 + 90 * Math.cos(Math.PI * (1 - display / 100) - Math.PI)}
-            cy={120 + 90 * Math.sin(Math.PI * (1 - display / 100) - Math.PI)}
-            r="8" fill={arcColor}
-            style={{ filter: `drop-shadow(0 0 6px ${arcColor})` }}
-          />
+         
           {/* Score */}
           <text x="110" y="108" textAnchor="middle" fill="white" fontSize="42" fontFamily="Syne" fontWeight="800">{display}</text>
           <text x="110" y="128" textAnchor="middle" fill="#4a6080" fontSize="12" fontFamily="DM Sans">STRESS SCORE</text>
