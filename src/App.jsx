@@ -9,6 +9,8 @@ import LoginPage from './pages/LoginPage'
 import { getStressLabel } from './lib/dataEngine'
 import { downloadDashboardPDF } from './lib/downloadPDF'
 import DataDiffPanel from './components/DataDiffPanel'
+import ManagerHistoryPanel from './components/ManagerHistoryPanel'
+import { logManagerActivity } from './lib/managerHistory'
 import { supabase } from './lib/supabase'
 
 export default function App() {
@@ -85,15 +87,21 @@ export default function App() {
   const handleLogin = (loggedUser) => {
     setUser(loggedUser)
     setRole(loggedUser.role)
+    if (loggedUser.role === 'ops') {
+      logManagerActivity('login', `${loggedUser.name} signed in as Operations Manager`)
+    }
   }
 
   const handleLogout = useCallback(async () => {
+    if (user?.role === 'ops') {
+      logManagerActivity('logout', `${user.name} signed out`)
+    }
     await supabase.auth.signOut()
     sessionStorage.removeItem('owner_session')
     setUser(null)
     setWarRoom(false)
     setSessionWarning(false)
-  }, [])
+  }, [user])
 
   const SESSION_TIMEOUT = 5 * 60 * 1000
   const timeoutRef = useRef(null)
@@ -127,9 +135,10 @@ export default function App() {
 
   const handleDownloadPDF = useCallback(async () => {
     setPdfGenerating(true)
+    if (user?.role === 'ops') logManagerActivity('pdf_export', `PDF exported — ${role} view, scenario: ${scenario}, BSS: ${stressScore?.overall}`)
     await downloadDashboardPDF({ role, stressScore, scenario })
     setPdfGenerating(false)
-  }, [role, stressScore, scenario])
+  }, [role, stressScore, scenario, user])
 
   const scenarioBtnClass = (s) =>
     `px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${scenario === s
@@ -199,14 +208,9 @@ export default function App() {
             style={{ background: isDark ? '#0a0f1e' : '#ffffff', borderColor: isDark ? '#1a2540' : '#e2e8f0' }}
           >
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-cyan-400 animate-pulse" />
-                <div className="w-3 h-3 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: '0.3s' }} />
-                <div className="w-3 h-3 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: '0.6s' }} />
-              </div>
               <div>
                 <h1 className="text-2xl font-display font-bold text-cyan-400 tracking-wider">
-                  📊 DATA INPUT
+                  DATA INPUT
                 </h1>
                 <p className="text-xs font-mono" style={{ color: isDark ? '#4a6080' : '#64748b' }}>
                   LOAD DEMO DATA OR UPLOAD YOUR OWN CSV
@@ -229,6 +233,7 @@ export default function App() {
                 onDataLoaded={(data) => {
                   if (data) {
                     setManualData(data)
+                    if (user?.role === 'ops') logManagerActivity('data_upload', `CSV uploaded — ${data._rows} rows, latest date: ${data._date}, Revenue: ₹${(data.sales.revenue/1000).toFixed(1)}K`)
                     setDataInput(false)
                   } else {
                     setManualData(null)
@@ -330,9 +335,9 @@ export default function App() {
             className="hidden md:flex items-center gap-1 rounded-xl p-1 border"
             style={{ background: surface, borderColor: borderCol }}
           >
-            <button onClick={() => setScenario('normal')} className={scenarioBtnClass('normal')}>Normal</button>
-            <button onClick={() => setScenario('opportunity')} className={scenarioBtnClass('opportunity')}>Opportunity</button>
-            <button onClick={() => setScenario('crisis')} className={scenarioBtnClass('crisis')}>⚠ Crisis</button>
+            <button onClick={() => { setScenario('normal'); if(user?.role==='ops') logManagerActivity('scenario_change', 'Switched to Normal scenario') }} className={scenarioBtnClass('normal')}>Normal</button>
+            <button onClick={() => { setScenario('opportunity'); if(user?.role==='ops') logManagerActivity('scenario_change', 'Switched to Opportunity scenario') }} className={scenarioBtnClass('opportunity')}>Opportunity</button>
+            <button onClick={() => { setScenario('crisis'); if(user?.role==='ops') logManagerActivity('scenario_change', 'Switched to Crisis scenario ⚠') }} className={scenarioBtnClass('crisis')}>⚠ Crisis</button>
           </div>
 
           {/* Right actions */}
@@ -363,7 +368,7 @@ export default function App() {
 
             {/* War Room button */}
             <button
-              onClick={() => setWarRoom(true)}
+              onClick={() => { setWarRoom(true); if(user?.role==='ops') logManagerActivity('war_room', `War Room activated — BSS: ${stressScore?.overall}, Crisis alerts: ${crisisCount}`) }}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${
                 crisisCount > 0 || stressScore?.overall > 75
                   ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse'
@@ -493,6 +498,10 @@ export default function App() {
               theme={theme}
               changedKeys={changedKeys}
             />
+            {/* Manager history — only visible to owner */}
+            <div className="mt-6">
+              <ManagerHistoryPanel theme={theme} />
+            </div>
           </div>
         ) : (
           <div id="dashboard-report">
