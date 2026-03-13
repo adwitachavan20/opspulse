@@ -1,5 +1,5 @@
 import React from 'react'
-import { DollarSign, TrendingUp, Package, HeadphonesIcon, Activity } from 'lucide-react'
+import { IndianRupee, TrendingUp, Package, HeadphonesIcon, Activity } from 'lucide-react'
 import MetricCard from '../components/MetricCard'
 import StressGauge from '../components/StressGauge'
 import AlertPanel from '../components/AlertPanel'
@@ -33,7 +33,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             sub={s ? `${s.orders} orders today` : ''}
             trend={s?.revenue > 40000 ? 'up' : 'down'}
             trendValue={s ? `${((s.revenue / 40000 - 1) * 100).toFixed(0)}%` : ''}
-            icon={DollarSign}
+            icon={IndianRupee}
             color="#00ff88"
             spark={revHistory.slice(-10)}
             isChanged={changedKeys.includes('sales')}
@@ -117,7 +117,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
 
         <div className="bg-surface border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
-            <DollarSign size={14} className="text-green-400" />
+            <IndianRupee size={14} className="text-green-400" />
             <h3 className="text-xs font-mono text-muted uppercase tracking-wider">Cash Flow</h3>
           </div>
           <div className="space-y-2">

@@ -10,7 +10,7 @@ import { getStressLabel } from './lib/dataEngine'
 import { downloadDashboardPDF } from './lib/downloadPDF'
 import DataDiffPanel from './components/DataDiffPanel'
 import ManagerHistoryPanel from './components/ManagerHistoryPanel'
-import ManagerListPanel from './components/ManagerListPanel'
+import ManagerListPanel from './components/Managerlistpanel'
 import { logManagerActivity } from './lib/managerHistory'
 import { supabase } from './lib/supabase'
 
@@ -357,7 +357,8 @@ export default function App() {
               <span>{pdfGenerating ? 'Generating…' : 'Download PDF'}</span>
             </button>
 
-            {/* ✅ CHANGE 4 — Data Input button */}
+            {/* ✅ CHANGE 4 — Data Input button (hidden for guests) */}
+            {user?.title !== 'Guest Viewer' && (
             <button
               onClick={() => setDataInput(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
@@ -366,6 +367,7 @@ export default function App() {
               <Database size={12} />
               <span className="hidden sm:inline">Data Input</span>
             </button>
+            )}
 
             {/* War Room button */}
             <button
@@ -499,11 +501,13 @@ export default function App() {
               theme={theme}
               changedKeys={changedKeys}
             />
-            {/* Manager list + history — only visible to owner */}
+            {/* Manager list + history — only visible to owner (not guest) */}
+            {user?.title !== 'Guest Viewer' && (
             <div className="mt-6 space-y-4">
               <ManagerListPanel theme={theme} />
               <ManagerHistoryPanel theme={theme} />
             </div>
+            )}
           </div>
         ) : (
           <div id="dashboard-report">
