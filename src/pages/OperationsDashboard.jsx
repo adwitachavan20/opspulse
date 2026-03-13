@@ -29,7 +29,7 @@ function ProgressRing({ value, max = 100, color, label, sub }) {
   )
 }
 
-export default function OperationsDashboard({ metrics, stressScore, alerts, history, onResolveAlert }) {
+export default function OperationsDashboard({ metrics, stressScore, alerts, history, onResolveAlert, changedKeys = [] }) {
   const inv = metrics?.inventory
   const sup = metrics?.support
   const cash = metrics?.cashflow
@@ -47,6 +47,7 @@ export default function OperationsDashboard({ metrics, stressScore, alerts, hist
           trendValue={sup ? `${sup.avg_response_time.toFixed(1)}h avg` : ''}
           icon={HeadphonesIcon}
           color="#f97316"
+          isChanged={changedKeys.includes('support')}
         />
         <MetricCard
           title="Stock Level"
@@ -56,6 +57,7 @@ export default function OperationsDashboard({ metrics, stressScore, alerts, hist
           trendValue={inv ? `${inv.turnover_rate.toFixed(1)}x turn` : ''}
           icon={Package}
           color="#a78bfa"
+          isChanged={changedKeys.includes('inventory')}
         />
         <MetricCard
           title="Avg Response"
@@ -64,6 +66,7 @@ export default function OperationsDashboard({ metrics, stressScore, alerts, hist
           trend={sup?.avg_response_time < 4 ? 'up' : 'down'}
           icon={Clock}
           color="#00e5ff"
+          isChanged={changedKeys.includes('support')}
         />
         <MetricCard
           title="Inventory Turnover"
@@ -72,6 +75,7 @@ export default function OperationsDashboard({ metrics, stressScore, alerts, hist
           trend={inv?.turnover_rate > 4 ? 'up' : 'flat'}
           icon={RefreshCw}
           color="#00ff88"
+          isChanged={changedKeys.includes('inventory')}
         />
       </div>
 

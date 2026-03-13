@@ -5,7 +5,8 @@ import StressGauge from '../components/StressGauge'
 import AlertPanel from '../components/AlertPanel'
 import TrendChart from '../components/TrendChart'
 
-export default function OwnerDashboard({ metrics, stressScore, alerts, history, onResolveAlert }) {
+export default function OwnerDashboard({ metrics, stressScore, alerts, history, onResolveAlert, theme, changedKeys = [] }) {
+  const isDark = theme === 'dark'
   const s = metrics?.sales
   const inv = metrics?.inventory
   const sup = metrics?.support
@@ -15,6 +16,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
 
   return (
     <div className="space-y-6 animate-fade-in">
+
       {/* Top row: Stress gauge + key metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Stress Score */}
@@ -34,6 +36,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             icon={DollarSign}
             color="#00ff88"
             spark={revHistory.slice(-10)}
+            isChanged={changedKeys.includes('sales')}
           />
           <MetricCard
             title="Cash Runway"
@@ -43,6 +46,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             trendValue={cash ? `₹${(cash.burn_rate / 1000).toFixed(1)}K/mo burn` : ''}
             icon={Activity}
             color="#ffb800"
+            isChanged={changedKeys.includes('cashflow')}
           />
           <MetricCard
             title="Conversion Rate"
@@ -52,6 +56,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             trendValue={s ? `${s.orders} orders` : ''}
             icon={TrendingUp}
             color="#00e5ff"
+            isChanged={changedKeys.includes('sales')}
           />
           <MetricCard
             title="Customer Satisfaction"
@@ -61,6 +66,7 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             trendValue={sup ? `${sup.escalated_tickets} escalated` : ''}
             icon={HeadphonesIcon}
             color="#a78bfa"
+            isChanged={changedKeys.includes('support')}
           />
         </div>
       </div>
@@ -96,11 +102,15 @@ export default function OwnerDashboard({ metrics, stressScore, alerts, history, 
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted font-body">Low Stock SKUs</span>
-              <span className={`text-sm font-mono ${inv?.low_stock_items > 5 ? 'text-amber-400' : 'text-white'}`}>{inv?.low_stock_items ?? '—'}</span>
+              <span className={`text-sm font-mono ${inv?.low_stock_items > 5 ? 'text-amber-400' : 'text-white'}`}>
+                {inv?.low_stock_items ?? '—'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted font-body">Stockouts</span>
-              <span className={`text-sm font-mono ${inv?.stockout_items > 0 ? 'text-red-400' : 'text-green-400'}`}>{inv?.stockout_items ?? '—'}</span>
+              <span className={`text-sm font-mono ${inv?.stockout_items > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {inv?.stockout_items ?? '—'}
+              </span>
             </div>
           </div>
         </div>
