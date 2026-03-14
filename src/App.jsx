@@ -20,6 +20,11 @@ import AlertHistoryPanel, { useSoundAlerts } from './components/AlertHistory'
 import DateFilter from './components/DateFilter'
 import AdvancedFeatures from './components/AdvancedFeatures'
 
+// ── INTEGRATED FEATURES: Auto Pilot · SMS · Email ─────────────────────────────
+import { useSMSAlerts } from './features/sms/useSMSAlerts'
+import IncidentCommander from './features/autopilot/IncidentCommander'
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState('owner')
@@ -70,6 +75,22 @@ export default function App() {
 
   const { metrics, alerts, stressScore, history, loading, resolveAlert, dataSource, changedKeys, demoSnapshot, demoStressSnapshot } = useRealtimeData(scenario, manualData)
   const { soundEnabled, setSoundEnabled, dispatched, setDispatched } = useSoundAlerts(alerts)
+
+  // ── INTEGRATED: SMS + Email hook ──────────────────────────────────────────
+  const { sendManualSMS, sendEmailReport } = useSMSAlerts({
+    stressScore,
+    metrics,
+    enabled: true,  // set to false to disable SMS/Email without removing code
+  })
+
+  // ── INTEGRATED: Auto Pilot state + trigger ────────────────────────────────
+  const [autoPilot, setAutoPilot] = useState(false)
+  useEffect(() => {
+    if ((stressScore?.overall ?? 0) > 85 && !autoPilot) {
+      setAutoPilot(true)
+    }
+  }, [stressScore])
+  // ─────────────────────────────────────────────────────────────────────────
   const { label: stressLabel, color: stressColor } = getStressLabel(stressScore?.overall ?? null)
   const crisisCount = alerts.filter(a => a.type === 'crisis').length
 
@@ -289,12 +310,25 @@ if (!user) {
         />
       )}
 
+      {/* ── INTEGRATED: Auto Pilot overlay ──────────────────────────────── */}
+      {autoPilot && (
+        <IncidentCommander
+          metrics={metrics}
+          stressScore={stressScore}
+          alerts={alerts}
+          theme={theme}
+          sendManualSMS={sendManualSMS}
+          onExit={() => setAutoPilot(false)}
+        />
+      )}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+
       {/* ── HEADER ─────────────────────────────────────────────────── */}
       <header
         className="border-b sticky top-0 z-40 backdrop-blur-sm transition-colors duration-300"
         style={{ background: headerBg, borderColor: borderCol }}
       >
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2 overflow-x-auto">
 
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -365,7 +399,7 @@ if (!user) {
 
           {/* Scenario switcher — desktop only */}
           <div
-            className="hidden md:flex items-center gap-1 rounded-xl p-1 border"
+            className="hidden lg:flex items-center gap-1 rounded-xl p-1 border"
             style={{ background: surface, borderColor: borderCol }}
           >
             <button onClick={() => { setScenario('normal'); if(user?.role==='ops') logManagerActivity('scenario_change', 'Switched to Normal scenario') }} className={scenarioBtnClass('normal')}>Normal</button>
@@ -374,7 +408,7 @@ if (!user) {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 flex-shrink-0">
 
             {/* Alert History + Sound toggle */}
             <AlertHistoryPanel
@@ -399,35 +433,57 @@ if (!user) {
               <span className="hidden sm:inline">Advanced</span>
             </button>
 
+            {/* ── INTEGRATED: Email Report + SMS Alert buttons ────────── */}
+            <button
+              onClick={() => sendEmailReport('report', alerts)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
+              style={{ background: surface, borderColor: borderCol, color: textMuted }}
+              title="Send Email Report"
+            >
+              <span>📧</span>
+              <span className="hidden sm:inline">Email</span>
+            </button>
+            <button
+              onClick={() => sendManualSMS(`Horizon Manual Report — Stress: ${stressScore?.overall}/100 — ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
+              style={{ background: surface, borderColor: borderCol, color: textMuted }}
+              title="Send SMS Alert"
+            >
+              <span>📱</span>
+              <span className="hidden sm:inline">SMS</span>
+            </button>
+            {/* ─────────────────────────────────────────────────────────── */}
+
             {/* PDF Download Button */}
             <button
               id="pdf-download-btn"
               onClick={handleDownloadPDF}
               disabled={pdfGenerating || loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: surface, borderColor: borderCol, color: textMuted }}
               title="Download Dashboard as PDF"
             >
               <Download size={12} />
-              <span>{pdfGenerating ? 'Generating…' : 'Download PDF'}</span>
+              <span className="hidden lg:inline">{pdfGenerating ? 'Generating…' : 'PDF'}</span>
             </button>
 
-            {/* ✅ CHANGE 4 — Data Input button (hidden for guests) */}
+            {/* Data Input button (hidden for guests) */}
             {user?.title !== 'Guest Viewer' && (
             <button
               onClick={() => setDataInput(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-mono border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
               style={{ background: surface, borderColor: borderCol, color: textMuted }}
+              title="Data Input"
             >
               <Database size={12} />
-              <span className="hidden sm:inline">Data Input</span>
+              <span className="hidden lg:inline">Data</span>
             </button>
             )}
 
             {/* War Room button */}
             <button
               onClick={() => { setWarRoom(true); if(user?.role==='ops') logManagerActivity('war_room', `War Room activated — BSS: ${stressScore?.overall}, Crisis alerts: ${crisisCount}`) }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
                 crisisCount > 0 || stressScore?.overall > 75
                   ? 'bg-red-500/20 text-red-400 border-red-500/50 animate-pulse'
                   : ''
@@ -437,15 +493,36 @@ if (!user) {
                   ? { background: surface, borderColor: borderCol, color: textMuted }
                   : {}
               }
+              title="War Room"
             >
               <Zap size={12} />
-              <span className="hidden sm:inline">War Room</span>
+              <span className="hidden lg:inline">War Room</span>
               {crisisCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
                   {crisisCount}
                 </span>
               )}
             </button>
+
+            {/* ── INTEGRATED: Auto Pilot button ────────────────────────── */}
+            <button
+              onClick={() => setAutoPilot(true)}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-mono border transition-all ${
+                stressScore?.overall > 85
+                  ? 'bg-orange-500/20 text-orange-400 border-orange-500/50 animate-pulse'
+                  : 'hover:border-orange-500/50 hover:text-orange-400'
+              }`}
+              style={
+                stressScore?.overall <= 85
+                  ? { background: surface, borderColor: borderCol, color: textMuted }
+                  : {}
+              }
+              title="Auto Pilot — AI Incident Commander"
+            >
+              <span>🤖</span>
+              <span className="hidden lg:inline">Auto Pilot</span>
+            </button>
+            {/* ─────────────────────────────────────────────────────────── */}
 
             {/* Dark / Light mode toggle */}
             <button
@@ -457,24 +534,21 @@ if (!user) {
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
-            {/* User info + Logout */}
-            <div className="flex items-center gap-2 pl-2 border-l" style={{ borderColor: borderCol }}>
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-mono font-semibold" style={{ color: textMain }}>{user.name}</span>
-                <span className="text-[10px] font-mono" style={{ color: textMuted }}>{user.title}</span>
-              </div>
+            {/* User avatar + Logout — always visible */}
+            <div className="flex items-center gap-1 pl-1 border-l flex-shrink-0" style={{ borderColor: borderCol }}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-display font-bold border ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-display font-bold border flex-shrink-0 ${
                   user.role === 'owner'
                     ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
                     : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
                 }`}
+                title={`${user.name} — ${user.title}`}
               >
                 {user.name.charAt(0)}
               </div>
               <button
                 onClick={handleLogout}
-                className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all hover:border-red-500/50 hover:text-red-400"
+                className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all hover:border-red-500/50 hover:text-red-400 flex-shrink-0"
                 style={{ background: surface, borderColor: borderCol, color: textMuted }}
                 title="Logout"
               >
@@ -516,11 +590,19 @@ if (!user) {
             <button onClick={() => setScenario('crisis')} className={scenarioBtnClass('crisis')}>⚠</button>
           </div>
 
-          <div className="flex items-center gap-1 text-xs font-mono" style={{ color: textMuted }}>
+          <div className="flex items-center gap-2 text-xs font-mono" style={{ color: textMuted }}>
             <RefreshCw size={10} className={pulse && dataSource !== 'manual' ? 'animate-spin text-cyan-400' : ''} />
             <span className="hidden sm:inline">
               {dataSource === 'manual' ? 'Static — your data' : 'Updates every 3s'}
             </span>
+            <button
+              onClick={() => setShowAdvanced(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg border transition-all hover:border-cyan-500/50 hover:text-cyan-400"
+              style={{ background: surface, borderColor: borderCol, color: textMuted, fontSize: 10 }}
+            >
+              <Activity size={10} />
+              <span>Advanced</span>
+            </button>
           </div>
 
         </div>
