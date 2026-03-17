@@ -6,10 +6,10 @@ export const supabase = createClient(
 )
 
 // ── Owner credentials (hardcoded — only 1 owner) ──────────────────
-export const OWNER_EMAIL = 'kushalnerpagar2006@gmail.com'      // ← change this
-export const OWNER_PASSWORD = 'ownerpass123'    // ← change this
+export const OWNER_EMAIL = 'adwitaalisha@gmail.com'      // ← change this
+export const OWNER_PASSWORD = '12345678'    // ← change this
 export const OWNER_PROFILE = {
-  name: 'VCET',       // ← change this to owner's name
+  name: 'AdwitaAlisha',       // ← change this to owner's name
   role: 'owner',
   title: 'Business Owner',
 }
